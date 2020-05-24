@@ -1,15 +1,15 @@
 import sys # for arguments
+import re # regex
 
-#args = len(sys.argv) -1
 # structure:
 # python3
-# [0] -> minify
+# [0] -> minifier.py    # source file
 # [1] -> fileName
-# [2] -> 'as'
-# [3] -> newFileName
-# usage: 'python3 minify currentFile.txt as newFile.txt'
+# usage: 'python3 minifier.py fileName.js'
+# works only for JS currently.
 
-def readFile(currentFile, newFile):
+def readFile(currentFile):
+    newFile = currentFile.split(".js")[0] + ".min.js" # filename.js turns into filename and then filename.min.js
     f1 = open(currentFile, "r+") # read
     # ----------------------------------------
     #add a space at the end of the file if the file does not end with space or line feed
@@ -31,17 +31,25 @@ def readFile(currentFile, newFile):
         word = ""
         for j in range(0, len(lines[i])):
             if(ord(lines[i][j]) == 10 or ord(lines[i][j]) == 32 or ord(lines[i][j]) == 9): # 10 -> LF, 32 -> Space, 9 -> Horizontal Tab
-                if(word == "function" or word == "const" or word == "var" or word == "let" or word == "class"):
+                if(word == "function" or word == "const" or word == "var" or word == "let" or word == "class" or word == "new" or word == "return"):
                     f2.write(word + " ") # word + 1space
                     word = ""
                 else:
                     f2.write(word)
                     word = ""
-            elif(ord(lines[i][j]) == 47): # 47 -> Slash. It does not include comments.
+            elif(ord(lines[i][j-1]) != 58 and ord(lines[i][j]) == 47 and ord(lines[i][j+1]) == 47): # removes comments (only //)
                 break
             else:
                 word = word + lines[i][j]
     f1.close()
     f2.close()
 
-readFile("jsFile.js", "output.js")  
+
+#print(len(sys.argv)) # length test
+#print(sys.argv) # argv test
+sys.argv.pop(0) # remove source file from the list
+#print(sys.argv) # current argv list test
+result = re.search("^[a-zA-Z]([a-zA-Z0-9]{0,})(\.js)$", sys.argv[0]) # filename.js format.
+if(result):
+    readFile(sys.argv[0])
+
